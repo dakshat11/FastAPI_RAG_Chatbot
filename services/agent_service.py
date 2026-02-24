@@ -1,6 +1,4 @@
-# services/agent_service.py  [PHASE 2 — minimal version]
-# In this phase: just an LLM call. No tools, no memory.
-# We will add to this file in phases 3, 4, and 5.
+# services/agent_service.py  [PHASE 3 — adds persistence]
 
 from typing import Annotated, TypedDict
 
@@ -10,11 +8,10 @@ from langgraph.graph import START, StateGraph
 from langgraph.graph.message import add_messages
 
 from core.config import settings
+from core.database import checkpointer   # ← NEW: import checkpointer
 
 
 class ChatState(TypedDict):
-    # add_messages reducer: new messages are APPENDED to the list, never replace it.
-    # This is what gives LangGraph its memory within a single run.
     messages: Annotated[list[BaseMessage], add_messages]
 
 
@@ -28,12 +25,6 @@ class AgentService:
         self._graph = self._build_graph()
 
     def _build_graph(self):
-        """
-        Minimal graph — just one node that calls the LLM.
-        No tools, no checkpointer, no loops.
-
-        Flow:  START → chat_node → END
-        """
 
         def chat_node(state: ChatState, config=None):
             system = SystemMessage(content="You are a helpful AI assistant.")
@@ -44,15 +35,28 @@ class AgentService:
         graph.add_node("chat_node", chat_node)
         graph.add_edge(START, "chat_node")
 
-        # No checkpointer in Phase 2 — no memory between requests
-        return graph.compile()
+        # ← NEW: passing checkpointer enables persistent memory
+        # LangGraph will save state to SQLite after every node execution
+        return graph.compile(checkpointer=checkpointer)
 
     def invoke(self, message: str, thread_id: str) -> str:
+        # ← NEW: the config dict is the key to memory.
+        # LangGraph uses thread_id to find and load the right conversation
+        # from SQLite before running the graph.
+        config = {"configurable": {"thread_id": thread_id}}
+
         result = self._graph.invoke(
-            {"messages": [HumanMessage(content=message)]}
+            {"messages": [HumanMessage(content=message)]},
+            config=config,       # ← pass config here
         )
         return result["messages"][-1].content
 
+    def get_all_threads(self) -> list[str]:
+        """List all thread IDs that have saved checkpoints."""
+        threads = set()
+        for checkpoint in checkpointer.list(None):
+            threads.add(checkpoint.config["configurable"]["thread_id"])
+        return list(threads)
 
-# Singleton — created once, shared by all requests
+
 agent_service = AgentService()
