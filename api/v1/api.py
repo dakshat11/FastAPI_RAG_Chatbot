@@ -5,11 +5,11 @@
 
 from fastapi import APIRouter
 
-from api.v1.endpoints import chat, threads, pdf
+from api.v1.endpoints import chat, threads, pdf, voice
 
 api_router = APIRouter(prefix="/api/v1")
 
 api_router.include_router(chat.router)      # → /api/v1/chat/
 api_router.include_router(threads.router)
 api_router.include_router(pdf.router)
-# Phase 6: api_router.include_router(voice.router)
+api_router.include_router(voice.router)

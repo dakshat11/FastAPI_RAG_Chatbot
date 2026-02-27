@@ -1410,6 +1410,9 @@ VOICE CHAT: client speaks →  POST /api/v1/voice/chat/  →  [STT]
                                                            [TTS]  →  MP3 audio bytes
 ```
 
+> **Two production bugs were found and fixed during development of this endpoint.
+> Both are documented in detail in the Bugs Encountered section at the end of Phase 6.**
+
 ### `schemas/voice.py`
 
 ```python
@@ -1512,38 +1515,54 @@ voice_service = VoiceService()
 
 ### `api/v1/endpoints/voice.py`
 
+Two bugs were discovered and fixed when testing this endpoint live. Both are explained
+in detail in the **Bugs Encountered** section directly below the code.
+
 ```python
 # api/v1/endpoints/voice.py
-# Voice chat endpoint.
-# Accepts audio, returns audio.
-# Internally identical to the text chat endpoint — same agent, same thread memory.
+# Voice chat endpoint — audio in, audio out.
+# Internally identical to the text chat endpoint: same agent, same thread memory.
 #
-# Why StreamingResponse for audio?
-# We have raw MP3 bytes in memory and need to send them to the client as a file download.
-# StreamingResponse lets us stream bytes from a BytesIO buffer without writing to disk.
-# The media_type="audio/mpeg" tells the client how to handle the bytes.
+# Why Response and NOT StreamingResponse?
+# StreamingResponse iterates over a BytesIO object line-by-line, splitting on \n (0x0A).
+# MP3 is raw binary — it contains 0x0A bytes throughout as part of the audio data.
+# Splitting on those corrupts the file. Response(content=bytes) sends the full buffer
+# in one shot with no processing. Since TTS returns all bytes synchronously, there is
+# no benefit to streaming anyway.
 #
 # Why no response_model=?
-# response_model is for JSON responses. When returning binary data (audio, images, files),
-# you use Response subclasses directly (StreamingResponse, FileResponse) and skip response_model.
-
-import io
+# response_model is for JSON responses only. For binary responses (audio, images, files),
+# return a Response subclass directly and omit response_model.
 
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response
 
 from services.agent_service import agent_service
 from services.voice_service import voice_service
 
 router = APIRouter(prefix="/voice", tags=["voice"])
 
-# Audio content types accepted from the client
-# Some browsers/clients send "application/octet-stream" for audio files
-ACCEPTED_AUDIO_TYPES = {
-    "audio/mpeg", "audio/mp3", "audio/mp4", "audio/wav",
-    "audio/x-wav", "audio/webm", "audio/ogg", "audio/m4a",
-    "application/octet-stream",
-}
+
+def _safe_header(value: str, max_len: int = 500) -> str:
+    """
+    Sanitize a string for use as an HTTP header value.
+
+    HTTP headers cannot contain newlines (\n, \r\n) or carriage returns.
+    They are protocol delimiters in HTTP/1.1 — a \n inside a header value
+    would be interpreted as the start of a new header line, which is a
+    security vulnerability known as HTTP Header Injection.
+
+    Uvicorn correctly rejects such values with:
+        RuntimeError: Invalid HTTP header value
+
+    LLM replies almost always contain newlines (bullet points, numbered lists,
+    paragraphs). Without this sanitization, any structured reply crashes the
+    entire response — even though the audio was generated successfully.
+
+    Fix: replace all newline variants with a space before setting the header.
+    Order matters: replace \r\n (Windows) first, then \n (Unix), then \r (old Mac).
+    """
+    return value.replace("\r\n", " ").replace("\n", " ").replace("\r", " ")[:max_len]
 
 
 @router.post("/chat")
@@ -1559,18 +1578,19 @@ async def voice_chat(
       2. Transcribe audio → text  (OpenAI Whisper)
       3. Send text to AI agent    (same LangGraph agent as /chat — preserves thread memory)
       4. Convert reply → audio    (OpenAI TTS)
-      5. Stream MP3 back to client
+      5. Return MP3 bytes to client as a downloadable file
 
     The thread_id is shared with the text /chat endpoint.
     A conversation that started over text can continue over voice and vice versa.
 
-    Call:  POST /api/v1/voice/chat?thread_id=my-thread
-    Body:  multipart/form-data, key='file', value=audio file
+    Call:     POST /api/v1/voice/chat?thread_id=my-thread
+    Body:     multipart/form-data, key='file', value=audio file
+    Response: audio/mpeg binary download (reply.mp3)
 
-    Response:  audio/mpeg binary stream
-    Headers:   X-Transcript  — what was heard (useful for displaying in UI)
-               X-Reply-Text  — text of the agent's reply (useful for subtitles)
-               X-Thread-Id   — echoes the thread_id
+    Custom headers (newlines stripped by _safe_header):
+      X-Transcript — what Whisper heard from the user
+      X-Reply-Text — the agent's reply in text form
+      X-Thread-Id  — echoes the thread_id
     """
     audio_bytes = await file.read()
     if not audio_bytes:
@@ -1578,7 +1598,6 @@ async def voice_chat(
 
     try:
         # Step 1: Speech → Text
-        # Whisper handles accents, background noise, and multiple languages automatically
         transcript = voice_service.transcribe(
             audio_bytes=audio_bytes,
             filename=file.filename or "audio.mp3",
@@ -1591,30 +1610,31 @@ async def voice_chat(
             )
 
         # Step 2: Text → Agent → Text
-        # This is EXACTLY the same call as the text /chat endpoint.
-        # The voice layer is transparent to the agent.
+        # Identical call to the text /chat endpoint. Voice is transparent to the agent.
         reply_text = agent_service.invoke(message=transcript, thread_id=thread_id)
 
         # Step 3: Text → Audio
         audio_response_bytes = voice_service.synthesise(text=reply_text)
 
-        # Step 4: Stream MP3 back to client
-        return StreamingResponse(
-            content=io.BytesIO(audio_response_bytes),
+        # Step 4: Return MP3 bytes.
+        # Using Response (not StreamingResponse) — see file-level comment for why.
+        # Content-Disposition: attachment forces a download prompt in browsers and
+        # shows a download link in Swagger UI. 'inline' would try to play in-page,
+        # but Swagger has no audio player so nothing would happen.
+        return Response(
+            content=audio_response_bytes,
             media_type="audio/mpeg",
             headers={
-                # Custom headers let the UI show text alongside audio
-                # Truncated to 500 chars to stay within HTTP header size limits
-                "X-Transcript": transcript[:500],
-                "X-Reply-Text": reply_text[:500],
+                "Content-Disposition": "attachment; filename=reply.mp3",
+                "X-Transcript": _safe_header(transcript),
+                "X-Reply-Text": _safe_header(reply_text),
                 "X-Thread-Id": thread_id,
-                # Tell browser it can be downloaded as a file if needed
-                "Content-Disposition": "inline; filename=reply.mp3",
+                "Access-Control-Expose-Headers": "X-Transcript, X-Reply-Text, X-Thread-Id",
             },
         )
 
     except HTTPException:
-        raise  # Re-raise our own HTTP exceptions unchanged
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Voice pipeline failed: {str(e)}")
 
@@ -1624,9 +1644,9 @@ async def transcribe_only(
     file: UploadFile = File(..., description="Audio file to transcribe"),
 ):
     """
-    Transcribe audio to text without sending it to the agent.
-    Useful for testing Whisper in isolation.
+    Transcribe audio to text only — no agent call, no TTS.
     Returns JSON with the transcribed text.
+    Use this to test that Whisper can hear your audio before attempting a full voice chat.
     """
     audio_bytes = await file.read()
     if not audio_bytes:
@@ -1641,6 +1661,69 @@ async def transcribe_only(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 ```
+
+### Bugs Encountered in Phase 6
+
+Both bugs only appeared during live testing — neither caused startup errors.
+This is why testing at each phase matters.
+
+---
+
+**Bug 1 — `RuntimeError: Invalid HTTP header value` (server crash on every voice request)**
+
+Symptom: The request returned HTTP 200 but the server logged an exception and the
+client received no usable response.
+
+Root cause: The headers dict contained `reply_text[:500]` directly. HTTP/1.1 uses
+`\r\n` as the delimiter between headers. A header value that contains a literal `\n`
+byte breaks the protocol — the HTTP parser on the receiving side treats it as the start
+of a new header line. This is a security vulnerability called HTTP Header Injection.
+Uvicorn correctly refuses to send it and raises `RuntimeError`.
+
+The LLM almost always returns multi-line replies (numbered steps, bullet points,
+paragraphs). The first request with a structured answer crashed the server.
+
+Fix: the `_safe_header()` function replaces all newline variants with spaces before
+the value is placed into a header:
+```python
+def _safe_header(value: str, max_len: int = 500) -> str:
+    return value.replace("\r\n", " ").replace("\n", " ").replace("\r", " ")[:max_len]
+```
+Note: `\r\n` must be replaced first (Windows line endings are two characters). If you
+replace `\n` first, you leave lone `\r` characters behind which are still illegal.
+
+---
+
+**Bug 2 — Audio file downloaded but could not be played (corrupted MP3)**
+
+Symptom: After fixing Bug 1, the file downloaded successfully but every audio player
+rejected it as an invalid or corrupt file.
+
+Root cause: `StreamingResponse` with a `BytesIO` object. Starlette's `StreamingResponse`
+iteratesd over file-like objects the same way Python iterates over text files — it
+yields chunks split on `\n` bytes (byte value `0x0A`). MP3 is raw binary audio data.
+The `0x0A` byte appears throughout MP3 files as part of the audio encoding — it is not
+a line separator. Splitting the binary stream on those bytes corrupts the MP3 frame
+structure. The client receives the pieces but they cannot be reassembled into valid audio.
+
+Fix: replace `StreamingResponse` with `Response`. `Response(content=bytes)` sends the
+entire byte buffer in a single write with no iteration and no processing:
+```python
+# BROKEN
+return StreamingResponse(content=io.BytesIO(audio_bytes), media_type="audio/mpeg", ...)
+
+# FIXED
+return Response(content=audio_bytes, media_type="audio/mpeg", ...)
+```
+`StreamingResponse` is the right tool when you are generating data incrementally (e.g.,
+streaming a large file from disk chunk-by-chunk). When you already have all bytes in
+memory — which TTS always gives you — `Response` is both correct and simpler.
+
+Additionally, `Content-Disposition` was changed from `inline` to `attachment`:
+- `inline` — tells the browser to try to render/play the file in-page. Swagger UI has
+  no audio player, so nothing happens and there is no download link.
+- `attachment; filename=reply.mp3` — forces every client to treat it as a file download,
+  which shows a **Download file** link in Swagger UI and a save dialog in browsers.
 
 ### Update `api/v1/api.py` for Phase 6
 
@@ -1672,10 +1755,14 @@ To use a different voice, add `TTS_VOICE=nova` to your `.env`.
 
 **Testing in Swagger UI:**
 1. Go to `http://localhost:8000/docs`
-2. Find `POST /api/v1/voice/chat`
-3. Enter a `thread_id`
-4. Upload a short audio file (any `.mp3` or `.wav` with you speaking)
-5. Execute — the response will be an audio file download
+2. First test `/voice/transcribe-only` with your audio file — verify Whisper returns
+   your words correctly before testing the full pipeline
+3. Find `POST /api/v1/voice/chat`
+4. Enter a `thread_id` in the query parameter box
+5. Upload a short `.mp3` or `.wav` of yourself speaking
+6. Click Execute
+7. A **Download file** link appears in the response section — click it to save `reply.mp3`
+8. Open `reply.mp3` in any audio player (Windows Media Player, VLC, etc.)
 
 **Testing with curl:**
 ```bash
@@ -1827,12 +1914,31 @@ thread_id is shared between text and voice, so a conversation can switch modalit
 seamlessly. The agent doesn't know or care whether the input came from typing or speaking."
 
 **On Bugs Fixed:**
-"The two most instructive bugs were: Form() + File() 422s (solved by using Query()
-for text params alongside file uploads), and ToolNode/bind_tools mismatch (solved by
-defining rag_tool inside _build_graph() so both the LLM and the executor see the same
-tool object at compile time)."
+"Four bugs were found and fixed across the project, each teaching something concrete:
+
+1. Form() + File() 422 — When a route uses File(), the entire request must be multipart.
+   Form() text fields must also be multipart, which most HTTP clients send incorrectly.
+   Fixed by moving thread_id to a Query() parameter instead.
+
+2. ToolNode/bind_tools mismatch — The LLM knew about rag_tool (via bind_tools) but
+   ToolNode didn't (it was only given base_tools). Fixed by defining rag_tool inside
+   _build_graph() and passing the same all_tools list to both bind_tools and ToolNode.
+
+3. Invalid HTTP header value — LLM replies contain newlines. Putting reply_text directly
+   into an HTTP header crashes uvicorn because newlines are protocol delimiters in HTTP/1.1.
+   Fixed with a _safe_header() sanitizer that replaces all newline variants with spaces.
+
+4. Corrupted MP3 audio — StreamingResponse iterates over BytesIO splitting on 0x0A
+   bytes. MP3 is binary — 0x0A appears throughout as audio data, not line endings.
+   Splitting corrupts the file. Fixed by switching to Response(content=bytes) which
+   sends the full buffer in one shot with no processing."
+
+The pattern across all four bugs: the error was silent at startup and only appeared
+at runtime under a specific condition. This is why you test each phase immediately
+rather than building everything first and testing at the end.
 
 ---
 
-*This document was written from the actual working project at `E:\Voice_agent_placement`.*
-*Every code block runs. Every concept is used. Build it phase by phase and test at each step.*
+*This document reflects the actual working project at `E:\Fastapi_voicebot`.*
+*Every code block is the exact final working version. Build it phase by phase and test at each step.*
+*Last updated after all bugs were fixed and the full pipeline (text chat, PDF RAG, voice in/out) was verified end-to-end.*
