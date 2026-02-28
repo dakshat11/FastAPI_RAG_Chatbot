@@ -25,15 +25,23 @@ def _safe_header(value: str, max_len: int = 500) -> str:
     """
     Sanitize a string for use as an HTTP header value.
 
-    HTTP headers cannot contain newlines (\n, \r\n) or carriage returns —
-    they are protocol delimiters in HTTP/1.1. If a header value contains them,
-    uvicorn raises 'RuntimeError: Invalid HTTP header value' and the entire
-    response fails, even though the audio was generated successfully.
+    Two things kill HTTP headers:
+      1. Newlines (\n, \r\n, \r) — protocol delimiters in HTTP/1.1.
+         Uvicorn raises RuntimeError: Invalid HTTP header value.
+      2. Characters outside Latin-1 (ISO-8859-1, code points 0-255).
+         HTTP/1.1 headers must be Latin-1 encodable. Unicode characters like
+         curly quotes (\u2018 \u2019), em dashes (\u2014), ellipsis (\u2026)
+         that LLMs commonly produce cause:
+         UnicodeEncodeError: 'latin-1' codec can't encode character ...
 
-    LLM replies almost always contain newlines (bullet points, numbered lists,
-    paragraphs), so this sanitization is always necessary on X-Reply-Text.
+    Fix: strip newlines first, then encode to Latin-1 with replace so any
+    character outside the 0-255 range becomes '?'.
     """
-    return value.replace("\r\n", " ").replace("\n", " ").replace("\r", " ")[:max_len]
+    # Step 1 — remove newline variants (\r\n must come before \n)
+    cleaned = value.replace("\r\n", " ").replace("\n", " ").replace("\r", " ")
+    # Step 2 — drop any character that can't be encoded in Latin-1
+    cleaned = cleaned.encode("latin-1", errors="replace").decode("latin-1")
+    return cleaned[:max_len]
 
 
 @router.post("/chat")
@@ -84,6 +92,7 @@ async def voice_chat(
         # This is EXACTLY the same call as the text /chat endpoint.
         # The voice layer is transparent to the agent.
         reply_text = agent_service.invoke(message=transcript, thread_id=thread_id)
+
 
         # Step 3: Text → Audio
         audio_response_bytes = voice_service.synthesise(text=reply_text)
