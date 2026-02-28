@@ -7,7 +7,6 @@
 #   4. Define global endpoints (health check)
 
 from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 
 from api.v1.api import api_router
