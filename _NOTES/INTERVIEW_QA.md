@@ -1265,6 +1265,7 @@ A: For a demo or internal tool, yes. For production serving real users:
 **Q: There's a Dockerfile in the project but it only has `FROM python:3.12`. What would a complete Dockerfile look like?**
 
 A: A production-grade Dockerfile:
+
 ```dockerfile
 FROM python:3.12-slim
 
@@ -1274,13 +1275,13 @@ WORKDIR /app
 RUN pip install uv
 
 # Copy dependency manifest first (Docker layer caching)
-COPY pyproject.toml uv.lock ./
+COPY ../pyproject.toml uv.lock ./
 
 # Install dependencies into the system Python (no venv needed in Docker)
 RUN uv sync --frozen --no-dev
 
 # Copy application code
-COPY . .
+COPY .. .
 
 # Expose the port
 EXPOSE 8000

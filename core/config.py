@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     retriever_k: int = 4
     tts_voice: str = "alloy"  # for Phase 6: alloy, echo, fable, onyx, nova, shimmer
 
+    # Pinecone — both must be set in .env
+    pinecone_api_key: str          # required — no default, app crashes at startup if missing
+    pinecone_index_name: str = "voicebot"
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

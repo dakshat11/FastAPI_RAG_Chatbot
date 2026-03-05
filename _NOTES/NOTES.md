@@ -386,7 +386,7 @@ class Settings(BaseSettings):
     # Optional — have defaults, can be overridden in .env
     model_name: str = "gpt-4o-mini"
     embedding_model: str = "text-embedding-3-small"
-    sqlite_db_path: str = "chatbot.db"
+    sqlite_db_path: str = "../chatbot.db"
     alpha_vantage_api_key: str = "C9PE94QUEW9VWGFM"
     chunk_size: int = 1000
     chunk_overlap: int = 200
@@ -394,7 +394,7 @@ class Settings(BaseSettings):
     tts_voice: str = "alloy"  # for Phase 6: alloy, echo, fable, onyx, nova, shimmer
 
     class Config:
-        env_file = ".env"
+        env_file = "../.env"
         env_file_encoding = "utf-8"
 
 

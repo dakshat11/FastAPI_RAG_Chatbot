@@ -40,3 +40,4 @@ async def upload_pdf(
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
