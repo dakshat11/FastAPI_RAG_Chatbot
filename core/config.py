@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     pinecone_api_key: str          # required — no default, app crashes at startup if missing
     pinecone_index_name: str = "voicebot"
 
+    # PostgreSQL — set in .env
+    database_url: str = "postgresql://postgres:password@localhost:5432/voicebot"
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

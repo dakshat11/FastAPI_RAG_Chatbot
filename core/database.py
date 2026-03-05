@@ -1,32 +1,35 @@
 # core/database.py
-# The SQLite connection and LangGraph checkpointer live here as module-level singletons.
-# One connection, shared across all requests.
+# PostgreSQL connection and LangGraph checkpointer.
 #
-# Why check_same_thread=False?
-# SQLite's Python binding defaults to only allowing access from the thread that created
-# the connection. FastAPI uses multiple threads. This flag disables that restriction.
-# For production scale, use PostgreSQL with async SQLAlchemy instead of SQLite.
+# Why psycopg.connect() instead of PostgresSaver.from_conn_string()?
+# from_conn_string() returns a context manager (a generator) — it is designed
+# for use inside a `with` block, not as a module-level singleton.
+# Calling .setup() on the generator object (not the checkpointer) raises:
+#   AttributeError: '_GeneratorContextManager' object has no attribute 'setup'
+#
+# psycopg.connect() gives a real connection object that PostgresSaver accepts directly.
+#
+# Why autocommit=True?
+# LangGraph's PostgresSaver issues individual SQL statements and manages its own
+# transaction boundaries internally. If autocommit is False (the default), psycopg3
+# wraps everything in a transaction block — this conflicts with LangGraph's internal
+# transaction management and causes errors. autocommit=True lets LangGraph control
+# its own transactions.
 
-import sqlite3
-
-from langgraph.checkpoint.sqlite import SqliteSaver
+import psycopg
+from langgraph.checkpoint.postgres import PostgresSaver
 
 from core.config import settings
 
-# Created once when this module is first imported
-_conn = sqlite3.connect(
-    database=settings.sqlite_db_path,
-    check_same_thread=False,
-)
+# Open one persistent connection at module level.
+# autocommit=True is required by LangGraph's PostgresSaver.
+_conn = psycopg.connect(settings.database_url, autocommit=True)
 
-# checkpointer wraps the connection with LangGraph's save/load interface
-checkpointer = SqliteSaver(conn=_conn)
+# Wrap the connection with LangGraph's save/load interface.
+# setup() creates the checkpoints tables if they don't exist — safe to call every startup.
+checkpointer = PostgresSaver(_conn)
+checkpointer.setup()
 
-def get_checkpointer() -> SqliteSaver:
-    """
-    Dependency injection factory.
-    Currently returns the module singleton.
-    If you swap to PostgreSQL later, only this function changes.
-    """
+
+def get_checkpointer() -> PostgresSaver:
     return checkpointer
-
