@@ -1,0 +1,40 @@
+services:
+
+  postgres:
+    image: postgres:18-alpine        # official PostgreSQL image, alpine = smaller
+    container_name: voicebot_postgres
+    environment:
+      POSTGRES_USER: voicebot_user
+      POSTGRES_PASSWORD: strongpassword
+      POSTGRES_DB: voicebot
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # persist DB files
+    ports:
+      - "5432:5432"        # expose to host for debugging (remove in production)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U voicebot_user -d voicebot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: voicebot_api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Override DATABASE_URL to use the postgres service by hostname
+      # "postgres" here is the service name above — Docker resolves it
+      - DATABASE_URL=postgresql://voicebot_user:strongpassword@postgres:5432/voicebot
+    depends_on:
+      postgres:
+        condition: service_healthy    # wait until postgres passes health check
+    restart: unless-stopped
+
+volumes:
+  postgres_data:     # named volume — Docker manages this, survives container removal
