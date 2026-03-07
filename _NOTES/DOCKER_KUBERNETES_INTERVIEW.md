@@ -32,9 +32,9 @@ are NOT reinstalled. This is why you always copy the dependency file before copy
 your code:
 
 ```dockerfile
-COPY pyproject.toml ./   # copied first, cached separately
+COPY ../pyproject.toml ./   # copied first, cached separately
 RUN uv sync              # only reruns if pyproject.toml changed
-COPY . .                 # code copied last
+COPY .. .                 # code copied last
 ```
 
 ---

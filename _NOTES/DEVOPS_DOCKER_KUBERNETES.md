@@ -111,7 +111,7 @@ RUN pip install uv
 # Key insight: Docker caches each layer. If only your code changes
 # (not pyproject.toml), this layer is cached and packages are NOT
 # reinstalled. This makes rebuilds fast — seconds instead of minutes.
-COPY pyproject.toml ./
+COPY ../pyproject.toml ./
 
 # Install all packages into a venv inside the image
 RUN uv venv .venv && uv sync --no-dev
@@ -124,7 +124,7 @@ FROM python:3.12-slim AS runtime
 WORKDIR /app
 
 COPY --from=builder /app/.venv /app/.venv
-COPY . .
+COPY .. .
 
 # Put the venv's Python first in PATH so it's used by default
 ENV PATH="/app/.venv/bin:$PATH"
