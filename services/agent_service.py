@@ -70,14 +70,14 @@ class AgentService:
             )
 
             system = SystemMessage(content=(
-                "You are a helpful AI assistant.\n\n"
-                f"Thread context: {doc_hint}\n\n"
+                "You are an expert ATS & Career Coach AI.\n\n"
+                f"Candidate Resume Context: {doc_hint}\n\n"
                 "Available tools:\n"
-                f"  • rag_tool — answer questions about the uploaded PDF (thread_id='{thread_id}')\n"
-                "  • search_tool — search the web\n"
+                f"  • rag_tool — retrieve exact details from the uploaded resume (thread_id='{thread_id}')\n"
+                "  • search_tool — search the web for industry trends or general job descriptions\n"
                 "  • calculator — arithmetic\n"
                 "  • get_stock_price — live stock prices\n\n"
-                "Always pass the thread_id argument when calling rag_tool."
+                "Always pass the thread_id argument when calling rag_tool. Act professionally, offer tailored advice for interview prep, ATS improvements, and career planning. Base your advice heavily on the uploaded resume when answering career questions."
             ))
             response = llm_with_tools.invoke([system, *state["messages"]], config=config)
             return {"messages": [response]}

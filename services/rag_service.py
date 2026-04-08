@@ -101,11 +101,15 @@ class RAGService:
                 namespace=str(thread_id),
             )
 
+            # Extract full text for ATS processing
+            full_text = "\n".join(doc.page_content for doc in docs)
+
             # 4. Save lightweight metadata to RAM
             metadata = {
                 "filename": filename or os.path.basename(temp_path),
                 "documents": len(docs),
                 "chunks": len(chunks),
+                "full_text": full_text,
             }
             _THREAD_METADATA[str(thread_id)] = metadata
             return metadata

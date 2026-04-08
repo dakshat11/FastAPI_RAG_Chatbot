@@ -1,0 +1,346 @@
+4
+DESCRIPTION
+FIELD OF INVENTION
+The 
+above
+ invention is in the field of 
+Embedded System and Artificial Intelligence
+. This 
+work
+ 
+is related 
+with the 
+develop
+ment of embedded device i.e. robot to clean the 
+dirt
+ present inside the pipes.
+ This 
+pipe
+ cleaning device is capable
+ 
+of removing 
+dirt
+ present at the inner walls of the pipe
+. The Pipes
+ are 
+located at the hazardous
+ environment 
+and these are 
+placed at
+ the very remote and unreachable 
+locations.
+BACKGROUND OF INVENTION
+Pipe cleaning is very important for the proper 
+transfer
+ of raw 
+and waste fluid 
+materials from one place to other in industries
+ as well as in household systems, civic systems
+. But cleaning is not an easy task. Harmful substances which are accumulated in the pipe make it very difficult for humans to work in the pipes. The changing diameter of pipes from few millimeters to several meters also a major factor. To overcome the size variation problem and to prevent human intervention in pipe cleaning an in-pipe robot with suitable features has to be developed in this project.
+Pipes are one of the most important components that are being used for the transportation of the raw materials in many industries. They are the integral part of oil and gas industries. Pipelines are used to carry materials like water, crude oil, gases, petroleum and industrial waste. Due to over usage the pipes will damage very less time. So we have to monitor the pipes continuously and clean the pipes on a regular basis. But inspection and cleaning the pipes is not an easy task it requires a lot of effort and time.
+1
+In olden days, large size pipes like drainages are cleaned manually by labors. Because of the size of the pipes and shapes involved with them we can’t use men for all occasions. Especially the industrial pipes vary in size from millimeters to meters and contain many types of harmful substances inside the pipe. The shapes are also very complicated, and branches like T-shape, Y-shape, increaser
+s
+, decreases and elbow are making the locomotion even more difficult. Because of the harmful substances it is necessary to use devices that can do the inspection and cleaning operations in the pipe.
+Because of the above reasons the only option we left with is the robots. The robots can come handy for pipeline inspection and cleaning. Now a day’s many researchers are working on the development of in-pipe robots. There are many robots designed for inspection and cleaning some of them are given below
+Wheeled type
+Caterpillar type
+Wall-pressed type
+Walking type
+Inchworm type
+Pig type (Pipe Inspection Gauges)
+In olden days pipes were cleaned using the human labors. The labor used to enter into the pipe and he used to clean the pipe by putting lot of efforts and consuming much time. Sometimes he even risks his life by entering into the pipe. Pipes used in industries contain many types of chemicals and harmful substances. Because of harsh environment we can’t use human labors in the pipes. Now-a-days the human labors are replaced by the in-pipe robots. In industries the many types of in-pipe robots are being used for the purpose of cleaning and inspection.
+Cleaning is not an easy task to perform, it requires lot of efforts. Because of the shapes and size variations in the pipes, a simple robot cannot fulfill all the requirements. Hence we need to accommodate different techniques needed for cleaning the pipe in single robot. So many researchers are studying about the best mechanism that is going to be used for pipe cleaning and inspection. Because of these reasons we need to develop a better pipe cleaning and inspection robot to save time, men and money.
+PRIOR ART
+We have gone through the previous different types of patents 
+related to
+ 
+the 
+pipe
+ cleaning devices and Robot
+, based on the previous work we have noted that 
+the most of the literature is related 
+to the
+ 
+various techniques that were used successfully in motion control of the robot.
+ 
+The various robots developed for 
+inspection of in-pipe environment and detection of the flaws in the pipe.
+2
+RELATED PATENTS
+CN209736257U -
+ Pipeline cleaning robot – 06/12/2019
+A pipeline cleaning robot belongs to the field of pipeline cleaning equipment. Belt cleaning device, running gear, cleaning solution recovery unit and electric control module have, belt cleaning device spiral cleaning blade have, running gear telescopic link, walking motor, track, sucking disc and expanding spring have. The utility model discloses can carry out economy to the pipeline, do not have and hinder, thoroughly, clean high-efficiently, have strong magnetic chuck, telescopic link and expanding spring's track, make the robot can walk in the pipeline environment of complicacy more firm, telescopic link and expanding spring's cooperation is used, can make the robot be fit for the walking of the pipeline of different bores, the spiral cleaning blade that the soft thing was made is when washing the pipeline, cannot cause the secondary injury to the pipeline, cleaning solution recovery unit's setting, can recycle part cleaning solution, make the cleaning process economic environmental protection more.
+CN110802086A - 
+Oil smoke pipeline cleaning robot – 18/02/202
+0
+The application discloses an oil smoke pipeline cleaning robot, which comprises a robot body, wherein two sides of the robot body are provided with tracks, the left side and the right side of each track are provided with adjustable water receiving devices, the adjustable water receiving devices are connected with the robot body through spring mechanical compression rods, the tail parts of the adjustable water receiving devices are connected with a water outlet, the water outlet is connected with a pipeline, a water spraying device and a hairbrush device are positioned right above the robot body, the robot body is a built-in detergent box body, and the bottom of the robot body is provided with a brush disc; the oil smoke pipeline cleaning robot can thoroughly clean oil stain on the pipeline, is efficient and pollution-free, and is suitable for cleaning square or round oil smoke pipelines.
+RU195220U1 - 
+Device for processing internal surface of pipes – 17/01/2020
+3
+The invention relates to devices for treating the inner surface of pipes, in particular to complex devices intended for applying a protective coating to the inner surface of pipes. The 
+essence of the invention lies in the fact that the device for treating the inner surface of pipes contains those located on a common movable base and equipped with drives movements working bodies, including a working body for applying a protective coating, a working body for applying a means for degreasing the inner surface spine tube actuator for the mechanical cleaning of the pipe surface. 
+CN110125112A - 
+The specialized robot of tunnel sewage pipe cleaning – 16/08/2019
+The present invention relates to a kind of specialized robots of tunnel sewage pipe cleaning, comprising: running gear, in sewage in-pipe
+, 
+It is installed in the cleaning device of the running gear side, including the cleaning brush that can be affixed with the inner wall of the sewage pipe, the cleaning brush can be rotated relative to the running gear, be cleaned by rotating the cleaning brush to the inner wall of the sewage pipe.
+ 
+The present invention, which can be realized, effectively clears up the inner wall of sewage pipe, realizes automation, without manually lower well operations, improves cleaning efficiency and quality
+CN203518806U
+ – 
+Cleaning robot
+ – 
+02
+/0
+4
+/20
+14
+The utility model discloses a cleaning robot which is used for cleaning a condenser cooling pipe. The cleaning robot is arranged in a condenser water chamber, and comprises a cleaning head device, mechanical arms, a connecting pipe and a booster pump, wherein the mechanical arms are fixedly connected with the cleaning head device, and the booster pump is connected with the cleaning head device in a sealing mode through the connecting pipe. By means of the cleaning robot, on-line cleaning of the condenser cooling pipe can be achieved, the structure is simple, mounting and usage are convenient, and the maintenance costs are low.
+CN103528429A
+  - 
+Cleaning head device and on-line cleaning robot of condenser 
+– 
+22
+/
+01
+/20
+14
+4
+The invention discloses a cleaning head device and an on-line cleaning robot of a condenser. The cleaning head device comprises a cleaning nozzle, a mechanical arm connecting device, an elastic reset device, a front electrifying solenoid and a rear electrifying solenoid, wherein the cleaning nozzle is hollow and is tubular, the mechanical arm connecting device comprises 
+a front structural part, a rear structural part and a connecting plate, the cleaning nozzle is sleeved with both the front structural part and the rear structural part, the front structural part and the rear structural part are connected through the connecting plate, the cleaning nozzle is sleeved with both the front electrifying solenoid and the rear electrifying solenoid, the front electrifying solenoid and the rear electrifying solenoid are located between the front structural part and the rear structural part, the rear electrifying solenoid is fixedly connected with the rear structural part, the front electrifying solenoid is fixedly connected with the cleaning nozzle, the elastic reset device is arranged between the front electrifying solenoid and the front structural part, and a sealing gasket is arranged on the front end face of the cleaning nozzle. The cleaning robot is arranged in a water chamber of the condenser and comprises the cleaning head device, a mechanical arm, a connecting pipe and a booster pump. The on-line cleaning robot of the condenser is simple in structure, convenient to install and use, and low in maintenance cost.
+CN101801549B - 
+Remote controlled robot for cleaning inner-walls of duct and remote control system using same – 03/07/2013
+The present invention relates to a remote controlled robot for cleaning inner walls of a duct,
+ 
+more specifically, to a remote controlled robot comprising: a cart movable in the duct by remote control; at least one first link pivotally connected to the cart, which is relatively rotatable to the cart; a first driving unit to drive the first link to relatively rotate to the cart; at least one second link pivotally connected to the first link, which is relatively rotatable to the first link; a second driving unit to drive the second link to relatively rotate to the first link; and a cleaning means installed at the second link for separating dusts from the inner walls of the duct, thereby enabling to clean the upper inner-walls and the bottom inner-wall of the duct simultaneously, and to continuously proceed with the cleaning in case of the height change of the duct to reduce cleaning time thereof.
+CN2684955Y - 
+Device for cleaning pipeline – 16/03/2005
+5
+The utility model provides a device for cleaning pipeline. Wherein, an air chamber is arranged at the engaging part of two pipe lines with at least one air inlet at the exterior margin, while the posterior margin is provided with a plurality of fumaroles. When the 
+compressed gas produced by a gas compressing generation device is led into the air chamber through the air inlet, the gas can inject into the pipeline through the fumaroles along the air chamber so as to clean the raw materials and silts in the pipeline. The air chamber of the utility model is provided with a plurality of fumaroles, and the chamfer angle of each 
+fumarole
+ can be adjusted to form a jet stream in various directions to clean the pipelines, which can avoid dead angle problem easily generated in pipeline cleaning in the existing technology.
+US3800358A - 
+Duct cleaning apparatus – 04/02/1974
+A remote-controlled, self-propelled, vehicular apparatus adapted to travel 
+tractionally
+ within a rectangular duct, and by a combined brushing and vacuum-cleaning operation, to remove dust and other foreign matter therefrom.
+US5528789A - 
+Robotic duct cleaning apparatus – 25/06/1996
+The 
+cleaning apparatus has a body with two wheels on opposite sides of the body which are driven by two electric motors for moving the body forward or rearward or for turning the body. A cleaning device which uses pressurized air is supported by the body for providing a cleaning function for cleaning the inside of the duct. The cleaning device is supported by a support member. Another electric motor is employed for moving the support member upward and downward. Lights and a video camera are located at the front of the body for allowing the duct to be monitored and inspected by way of a remote video screen. Electrical leads are coupled to the motors to the lights and to the camera for remote control purposes. A conduit is coupled to the cleaning device for supplying air under pressure to the cleaning device.
+CN209744391U - Smoke pipe cleaning mechanism and cleaning robot – 12/06/2019
+CN209849476U - Multifunctional pipeline cleaning robot – 27/12/2019
+CN110465525A
+ - A kind of inner wall of the pipe clean robot – 16/09/2019
+6
+CN110639902A
+ - General type pipeline cleaning robot equipment – 03/01/2020
+SUMMARY OF INVENTION
+This 
+pipe
+ cleaning device or 
+p
+ipe cleaning robot system is
+ mainly focus
+ to clean 
+dirt or 
+slug
+ present at the inner side of the pipes having various size, shape and dimensions. 
+The 
+dirt or 
+slug
+ present inside the pipe having various chemical and biological properties with respect to the environment. In industrial environment, harmful chemical, oil, poisonous fluids in the form of west use to through from the pipes similarly in urban or rural areas household west in the biodegradable form use to through from the pipes and it is very harmful. 
+This 
+pipe or dirt
+ cleaning device can be move from any size, shape pipe and able to clean any type of 
+dirt
+ without interference of human
+.
+The objective of the project is to design a pipe cleaning and inspection ro
+bot for industrial applications
+ further this 
+in-pipe robot 
+will be suitable for
+ pipes 
+having
+ changing diameters
+, it having common mechanism for 
+both locomotion and cleaning.
+ The inspection system must be cost effective, should be implement in
+ low-cost 
+and 
+with
+ good accuracy.
+ Ultimately aim is to develop efficient
+ cleaning device.
+BRIEF DESCRIPTION OF THE FIGURES
+Figure 1: 
+In-pipe cleaning robot
+Figure 2: 
+C
+leaning portion and piston - cylinder mechanism
+Figure 3: 
+F
+inal in-pipe model
+Figure 4: 
+Block Diagram of Transmitter and Receiver
+DETAIL
+ DESCRIPTION OF THE FIGURES
+7
+The figure 1 
+represents
+ 
+the 
+design of an in-pipe robot which can perform cleaning with help of three dc motors and locomotion by using a two high torque dc motors. To inspect the in-pipe environment we planned to use a camera at the front portion of the in-pipe cleaning robot
+The figure 
+2 
+represents 
+t
+he 
+use a piston cylinder mechanism for automatic adjustment of pipe size. 
+The figure 3 represents 
+the 
+finally developed concept. In this the model is developed in such a way that it overcomes defects and problems present in the previous design. The above design is focused for the use of only one DC motor for both transmission and cleaning. There is a mechanism which uses a bevel gear to provide both locomotion and cleaning simultaneously. 
+The figure 4 represents 
+t
+he 
+block diagram of proposed 
+pipe
+ cleaning robot system, it provides direction to the robot through MATLAB, and the commands are transmitted to the robot using RF Trans-receiver receiver system.
+5.
+DATE AND SIGNATURE
+Moresh
+ 
+Madhukar
+ 
+Mukhedkar
+-
+______________
+ 
+Nitin
+ A 
+Dawande
+Alfiya
+ 
+Inamdar
+-
+______________
+Aishwarya
+ 
+Doifode
+-
+______________
+Sagar
+ 
+Namdeo
+ 
+Shinde
+-
+______________
+8
+6.
+CLAIMS
+The device is designed as a stand-alone unit 
+to clean the 
+dirt
+ present inside the pipe. 
+Th
+is
+ unit is 
+developed
+ and completely ready for operation after all connections have been established.
+It is the wall-pressed in-pipe
+, the dirt
+ cleaning robot having various mechanisms for cleaning, moving, actuation and inspection
+There are two wheels in the system for 
+movement of 
+the
+ 
+pipe
+ cleaning
+ robot in and out of the pipe. The wheels are mounted on the wheel support. The wheel support is placed on the body. The suspension spindle in the drive shaft makes the wheels to self-adjust according to the pipe diameter.
+The cleaning portion has 
+four cleaning wipers mounted on the cleaning portion. The wipers are self-adjustable according to the size of the pipe. The cleaning portion contains springs for automatic adjustment.
+There is a universal joint in between the body and cleaning portion so that there will be automatic direction change in the robot. The robot will move according to the direction of the pipe.
+The inspection is carried out with an ultrasonic sensor included in the robot. It accurately detects the flaws in the pipe. The device is very small so that we can easily use the ultrasonic sensor for small size pipes.
+1
+7.
+   
+ABSTRACT
+Pipe
+ cleaning device
+ is design
+ed for
+ pipe cleaning and inspection 
+using 
+robot for 
+various 
+industrial applications. This
+ 
+Pipe
+ cleaning device
+ is use
+s
+ very simple mechanism for cleaning the internal area of the pipe with 
+varying 
+diameters. The design is focusing on developing a bevel gear mechanism which can able to clean and trans
+fer
+ the robot into the pipe effectively. Here we are going to use only single DC motor for both cleaning and locomotion in the pipe. The inspection of the pipe is
+ done
+ by using the ultrasonic sensor. The ultrasonic sensor is going to give the distance between the 
+dirt or slug 
+or 
+obstacle and the robot. 
+After
+ the 
+ultrasound wave analysis, robot
+ 
+will get the information 
+about the 
+distance, 
+bends and joints
+ present inside the pipe
+. The ultrasonic sensor is also 
+provides the
+ information regarding the waste materials accumulated in the pipe.
+1
+Figure 1:
+In-pipe cleaning robot
+ 
+1
+Figure 2:
+C
+leaning portion and piston
+ 
+- cylinder mechanism
+2
+Figure 
+3
+:
+In Pipe Model
+3
+Figure 
+4
+: 
+Block Diagram of Transmitter & Receiver
+PC (MATLAB)
+             
+           
+ Usb2serial
+Transmitter
+      
+RF transmitter
+Receiver
+                
+RF receiver
+LPC2148
+ROBOT SECTION 
+Left side motors
+         
+L293d
+Right side motors
+POWER SUPPLY
+PROXIMITY SENSOR
+4
