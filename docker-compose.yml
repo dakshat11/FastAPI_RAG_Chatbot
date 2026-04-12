@@ -1,18 +1,18 @@
 services:
 
   postgres:
-    image: postgres:18-alpine        # official PostgreSQL image, alpine = smaller
+    image: postgres:18-alpine # official PostgreSQL image, alpine = smaller
     container_name: voicebot_postgres
     environment:
       POSTGRES_USER: voicebot_user
       POSTGRES_PASSWORD: strongpassword
       POSTGRES_DB: voicebot
     volumes:
-      - postgres_data:/var/lib/postgresql/data   # persist DB files
+      - postgres_data:/var/lib/postgresql/data # persist DB files
     ports:
-      - "5432:5432"        # expose to host for debugging (remove in production)
+      - "5432:5432" # expose to host for debugging (remove in production)
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U voicebot_user -d voicebot"]
+      test: [ "CMD-SHELL", "pg_isready -U voicebot_user -d voicebot" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,10 +31,35 @@ services:
       # Override DATABASE_URL to use the postgres service by hostname
       # "postgres" here is the service name above — Docker resolves it
       - DATABASE_URL=postgresql://voicebot_user:strongpassword@postgres:5432/voicebot
+    volumes:
+      - .:/app       # Sync your code live into the container
+      - /app/.venv   # Protect the Linux venv from being overwritten by Windows
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     depends_on:
       postgres:
-        condition: service_healthy    # wait until postgres passes health check
+        condition: service_healthy # wait until postgres passes health check
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: voicebot_frontend
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    environment:
+      # Tell streamlit exactly where the API is inside the Docker network.
+      # The api service is named 'api' and exposes port 8000.
+      - API_URL=http://api:8000
+    volumes:
+      - .:/app       # Sync your code live into the frontend container too
+      - /app/.venv   # Protect the Linux venv
+    depends_on:
+      - api
+    command: [ "streamlit", "run", "frontend/app.py", "--server.port=8501", "--server.address=0.0.0.0" ]
     restart: unless-stopped
 
 volumes:
-  postgres_data:     # named volume — Docker manages this, survives container removal
+  postgres_data: # named volume — Docker manages this, survives container removal
